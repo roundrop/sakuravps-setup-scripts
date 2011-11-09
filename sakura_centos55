@@ -3,9 +3,12 @@
 #################################################
 # Initial setup script for CentOS 5.5 on Sakura VPS
 #
-# @@@username@@@   : User name
-# @@@ssh_port@@@   : SSH Port
-# @@@id_rsa.pub@@@ : RSA public key text
+# Inspired by http://blog.dinoz.jp/172.html
+#
+# Please use it after rewriting the following character strings first.
+#   @@@username@@@   => A general user's name to create
+#   @@@ssh_port@@@   => SSH port number
+#   @@@id_rsa.pub@@@ => RSA public key text
 #################################################
 
 USER="@@@username@@@"
@@ -32,7 +35,7 @@ chkconfig sendmail off
 chkconfig ip6tables off
 yum -y install vim-enhanced
 
-# rc
+# vim
 cat << EOS >> /etc/bashrc 2>&1
 alias vi=vim
 EOS
@@ -145,11 +148,19 @@ chown -R $USER:$USER /home/$USER/.ssh/
 service sshd restart
 
 # complete message
-echo "Check!"
-echo "1. Can login as $USER"
-echo "2. Cannot login as root"
-echo "3. Can 'sudo' as $USER (with no password)"
-echo "If there is no problem, To do this"
-echo "vi /etc/ssh/sshd_config"
-echo "change 'PasswordAuthentication' to 'no'"
-echo "reboot"
+cat << EOS
+----------------------------------------
+Please check the following!!
+
+1. It can login as $USER
+2. It cannot login as root
+3. It can sudo as $USER (with no password)
+
+If all the checks are passed,
+  > vi /etc/ssh/sshd_config
+  PasswordAuthentication yes -> PasswordAuthentication no
+
+Finally please reboot a system.
+  > reboot
+EOS
+
