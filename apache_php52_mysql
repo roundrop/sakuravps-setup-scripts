@@ -1,0 +1,68 @@
+#!/bin/bash
+
+#################################################
+# Installer script for LAMP
+#   Apache / PHP5.2 / MySQL
+#################################################
+
+## check executable user
+if [ "`whoami`" != "root" ]; then
+  echo "You need to be root to run this!"
+  exit 2
+fi
+
+##
+echo 'Add CentOS-Testing repository'
+cd /etc/yum.repos.d/
+wget http://dev.centos.org/centos/5/CentOS-Testing.repo
+
+##
+echo 'Install LAMP (Apache(Dependency Install) / PHP5.2 / MySQL)'
+yum -y --enablerepo=c5-testing install php-devel php-mbstring php-mysql php-gd php-mcrypt php-pear mysql-server
+chkconfig httpd on
+chkconfig mysqld on
+
+## my.cnf
+cp /etc/my.cnf /etc/my.cnf.org
+cat > /etc/my.cnf << CNF
+[mysqld]
+datadir=/var/lib/mysql
+socket=/var/lib/mysql/mysql.sock
+user=mysql
+# Default to using old password format for compatibility with mysql 3.x
+# clients (those using the mysqlclient10 compatibility package).
+old_passwords=1
+
+# character-set
+default-character-set=utf8
+skip-character-set-client-handshake
+
+# To allow mysqld to connect to a MySQL Cluster management daemon, uncomment
+# these lines and adjust the connectstring as needed.
+#ndbcluster
+#ndb-connectstring="nodeid=4;host=localhost:1186"
+
+[mysqld_safe]
+log-error=/var/log/mysqld.log
+pid-file=/var/run/mysqld/mysqld.pid
+
+[ndbd]
+# If you are running a MySQL Cluster storage daemon (ndbd) on this machine,
+# adjust its connection to the management daemon here.
+# Note: ndbd init script requires this to include nodeid!
+connect-string="nodeid=2;host=localhost:1186"
+
+[ndb_mgm]
+# connection string for MySQL Cluster management tool
+connect-string="host=localhost:1186"
+
+[client]
+default-character-set=utf8
+ 
+[mysql]
+default-character-set=utf8
+ 
+[mysqldump]
+default-character-set=utf8
+CNF
+
