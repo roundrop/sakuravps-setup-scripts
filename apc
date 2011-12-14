@@ -1,0 +1,30 @@
+#!/bin/bash
+
+#################################################
+# Installer script for APC
+#
+#################################################
+
+## check executable user
+if [ "`whoami`" != "root" ]; then
+  echo "You need to be root to run this!"
+  exit 2
+fi
+
+##
+echo 'Install APC'
+yum --enablerepo=c5-testing -y install pcre-devel
+cat << EOS
+Please answer, as written on below.
+----------------------------------------
+Enable internal debugging in APC [no] : 
+Enable per request file info about files used from the APC cache [no] : 
+Enable spin locks (EXPERIMENTAL) [no] : yes
+Enable memory protection (EXPERIMENTAL) [no] : 
+Enable pthread mutexes (default) [yes] : 
+Enable pthread read/write locks (EXPERIMENTAL) [no] : 
+----------------------------------------
+EOS
+pecl install APC
+echo "extension=apc.so" > /etc/php.d/apc.ini
+
