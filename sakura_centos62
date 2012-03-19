@@ -1,0 +1,146 @@
+#!/bin/bash
+
+#################################################
+# Initial setup script for CentOS 6.2 on Sakura VPS
+#
+# Inspired by http://blog.dinoz.jp/172.html
+#
+# Please use it after rewriting the following character strings first.
+# @@@username@@@ => A general user's name to create
+# @@@ssh_port@@@ => SSH port number
+# @@@id_rsa.pub@@@ => RSA public key text
+#################################################
+
+USER="@@@username@@@"
+PORT="@@@ssh_port@@@"
+
+# check executable user
+if [ "`whoami`" != "root" ]; then
+  echo "You need to be root to run this!"
+  exit 2
+fi
+
+# create user
+echo "ROOT PASS -----";
+passwd
+echo "$USER PASS -----";
+useradd $USER
+passwd $USER
+usermod -G wheel $USER
+
+# minimum setting
+yum -y erase *.i386 *.i686
+yum -y update
+chkconfig ip6tables off
+yum -y install vim-enhanced
+
+# vim
+cat << EOS >> /etc/bashrc 2>&1
+alias vi=vim
+EOS
+
+cat << EOS >> /etc/vimrc 2>&1
+set number
+set expandtab
+set tabstop=2
+set cindent
+set shiftwidth=2
+set encoding=UTF-8
+set ambiwidth=double
+EOS
+
+# sshd_config
+cp /etc/ssh/sshd_config /etc/ssh/sshd_config.default
+cat << EOS >> /etc/ssh/sshd_config 2>&1
+Port $PORT
+PermitRootLogin no
+PermitEmptyPasswords no
+RSAAuthentication yes
+PubkeyAuthentication yes
+AuthorizedKeysFile .ssh/authorized_keys
+EOS
+
+# accept 'su' from wheel group only
+cp /etc/pam.d/su /etc/pam.d/su.bak
+tac /etc/pam.d/su > /etc/pam.d/su.tmp
+cat << EOS >> /etc/pam.d/su.tmp 2>&1
+auth required pam_wheel.so use_uid
+EOS
+tac /etc/pam.d/su.tmp > /etc/pam.d/su
+rm -rf /etc/pam.d/su.tmp
+
+# accept 'sudo' with no password from wheel group
+cat << EOS >> /etc/sudoers 2>&1
+%wheel ALL=(ALL) NOPASSWD: ALL
+EOS
+
+# accept SSH from wheel group only
+cat << EOS >> /etc/security/access.conf 2>&1
+-:ALL EXCEPT wheel:ALL
+EOS
+
+cat << EOS >> /etc/pam.d/sshd 2>&1
+account required pam_access.so
+EOS
+
+# iptables
+cat << EOS >> /etc/sysconfig/iptables 2>&1
+*filter
+:INPUT ACCEPT [0:0]
+:FORWARD ACCEPT [0:0]
+:OUTPUT ACCEPT [0:0]
+:RH-Firewall-1-INPUT - [0:0]
+-A INPUT -j RH-Firewall-1-INPUT
+-A FORWARD -j RH-Firewall-1-INPUT
+-A RH-Firewall-1-INPUT -i lo -j ACCEPT
+-A RH-Firewall-1-INPUT -p icmp --icmp-type any -j ACCEPT
+-A RH-Firewall-1-INPUT -p 50 -j ACCEPT
+-A RH-Firewall-1-INPUT -p 51 -j ACCEPT
+-A RH-Firewall-1-INPUT -p udp --dport 5353 -d 224.0.0.251 -j ACCEPT
+-A RH-Firewall-1-INPUT -p udp -m udp --dport 631 -j ACCEPT
+-A RH-Firewall-1-INPUT -p tcp -m tcp --dport 631 -j ACCEPT
+-A RH-Firewall-1-INPUT -m state --state ESTABLISHED,RELATED -j ACCEPT
+-A RH-Firewall-1-INPUT -m state --state NEW -m tcp -p tcp --dport 80 -j ACCEPT
+-A RH-Firewall-1-INPUT -m state --state NEW -m tcp -p tcp --dport $PORT -j ACCEPT
+-A RH-Firewall-1-INPUT -j REJECT --reject-with icmp-host-prohibited
+COMMIT
+EOS
+
+# home
+mkdir /home/$USER/.ssh/
+chmod go-w /home/$USER/.ssh/
+touch /home/$USER/.ssh/authorized_keys
+cat << EOS >> /home/$USER/.ssh/authorized_keys 2>&1
+@@@id_rsa.pub@@@
+EOS
+chmod 600 /home/$USER/.ssh/authorized_keys
+chown -R $USER:$USER /home/$USER/.ssh/
+
+# stop unwanted services
+/sbin/chkconfig auditd off
+/sbin/chkconfig haldaemon off
+/sbin/chkconfig lvm2-monitor off
+/sbin/chkconfig mdmonitor off
+/sbin/chkconfig messagebus off
+/sbin/chkconfig netfs off
+/sbin/chkconfig restorecond off
+/sbin/chkconfig smartd off
+
+service sshd restart
+
+# complete message
+cat << EOS
+----------------------------------------
+Please check the following!!
+
+1. It can login as $USER
+2. It cannot login as root
+3. It can sudo as $USER (with no password)
+
+If all the checks are passed,
+  > vi /etc/ssh/sshd_config
+  PasswordAuthentication yes -> PasswordAuthentication no
+
+Finally please reboot a system.
+  > reboot
+EOS
