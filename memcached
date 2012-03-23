@@ -1,0 +1,33 @@
+#!/bin/bash
+
+#################################################
+# Installer script for Memcached
+#
+#################################################
+
+## check executable user
+if [ "`whoami`" != "root" ]; then
+  echo "You need to be root to run this!"
+  exit 2
+fi
+
+##
+echo 'Install Memcached'
+yum -y install memcached php-pecl-memcache
+
+## memcached configuration
+cat > /etc/sysconfig/memcached << CNF
+PORT="11211"
+USER="memcached"
+MAXCONN="1024"
+CACHESIZE="64"
+OPTIONS="-l 127.0.0.1"
+CNF
+
+## php-pecl-memcache configuration
+echo "session.save_handler=memcache" >> /etc/php.d/memcache.ini
+echo "session.save_path=\"tcp://localhost:11211?persistent=1&weight=1&timeout=1&retry_interval=15\"" >> /etc/php.d/memcache.ini
+
+## chkconfig
+chkconfig memcached on
+
