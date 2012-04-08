@@ -15,7 +15,7 @@ fi
 echo 'Install nginx + spawn-fcgi'
 yum -y install nginx
 yum -y install spawn-fcgi
-cat > /root/test.txt << SCRIPT
+cat > /etc/rc.d/init.d/php-fastcgi << SCRIPT
 #!/bin/sh
 #
 # spawn-fcgi    Start and stop FastCGI processes
