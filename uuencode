@@ -1,0 +1,17 @@
+#!/bin/bash
+
+#################################################
+# Installer script for uuencode(sharutils)
+#
+#################################################
+
+## check executable user
+if [ "`whoami`" != "root" ]; then
+  echo "You need to be root to run this!"
+  exit 2
+fi
+
+##
+echo 'Install uuencode(sharutils)'
+yum -y install sharutils
+
