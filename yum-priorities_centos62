@@ -1,0 +1,21 @@
+#!/bin/bash
+
+#################################################
+# Installer script for yum-priorities
+#
+#################################################
+
+## check executable user
+if [ "`whoami`" != "root" ]; then
+  echo "You need to be root to run this!"
+  exit 2
+fi
+
+##
+echo 'install yum-plugin-priorities'
+yum -y install yum-plugin-priorities
+cp /etc/yum.repos.d/CentOS-Base.repo /etc/yum.repos.d/CentOS-Base.repo.`date +%Y%m%d`
+sed -i 's/\[base\]/\[base\]\npriority=1/' /etc/yum.repos.d/CentOS-Base.repo
+sed -i 's/\[updates\]/\[updates\]\npriority=1/' /etc/yum.repos.d/CentOS-Base.repo
+sed -i 's/\[extras\]/\[extras\]\npriority=1/' /etc/yum.repos.d/CentOS-Base.repo
+
