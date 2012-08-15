@@ -1,0 +1,22 @@
+#!/bin/bash
+
+#################################################
+# script for adding RPMforge repository
+#
+#################################################
+
+## check executable user
+if [ "`whoami`" != "root" ]; then
+  echo "You need to be root to run this!"
+  exit 2
+fi
+
+##
+echo 'add rpmforge repository'
+cd /usr/local/src
+wget http://dag.wieers.com/rpm/packages/RPM-GPG-KEY.dag.txt
+rpm --import rpm-gpg/RPM-GPG-KEY.dag.txt
+wget http://pkgs.repoforge.org/rpmforge-release/rpmforge-release-0.5.2-2.el6.rf.x86_64.rpm
+#rpm --checksig rpmforge-release-0.5.2-2.el6.rf.x86_64.rpm
+rpm -ihv rpmforge-release-0.5.2-2.el6.rf.x86_64.rpm
+

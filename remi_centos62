@@ -1,0 +1,20 @@
+#!/bin/bash
+
+#################################################
+# script for adding remi repository
+#
+#################################################
+
+## check executable user
+if [ "`whoami`" != "root" ]; then
+  echo "You need to be root to run this!"
+  exit 2
+fi
+
+##
+echo 'add remi repository (enabled=0/priority=1)'
+cd /usr/local/src
+wget http://rpms.famillecollet.com/enterprise/remi-release-6.rpm
+rpm -Uvh remi-release-6.rpm
+sed -i 's/\[remi\]/\[remi\]\npriority=1/' /etc/yum.repos.d/remi.repo
+
