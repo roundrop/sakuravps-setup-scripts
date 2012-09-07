@@ -1,0 +1,22 @@
+#!/bin/bash
+
+#################################################
+# Creates .tmux.conf
+#
+#################################################
+
+## create .tmux.conf
+USER="`whoami`"
+cat > /home/$USER/.tmux.conf << CNF
+unbind C-b
+set-option -g prefix C-z
+bind C-z send-prefix
+set-option -g history-limit 5000
+bind-key = split-window -v
+bind-key | split-window -h
+bind -n C-Space next-window
+bind -n M-Space previous-window
+CNF
+
+chmod 600 /home/$USER/.tmux.conf
+
