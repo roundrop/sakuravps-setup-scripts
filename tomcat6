@@ -12,13 +12,9 @@ if [ "`whoami`" != "root" ]; then
 fi
 
 ##
-echo 'Install tomcat-6.0.36'
-while [ -z "$destdir" ]; do
-  echo -n "Installation Directory [/usr/local/tomcat-6.0.36]: "
-  read $destdir
-done
+echo 'Install tomcat-6.0.36 to /usr/local/tomcat-6.0.36'
 cd /usr/local/src
 wget http://ftp.yz.yamagata-u.ac.jp/pub/network/apache/tomcat/tomcat-6/v6.0.36/bin/apache-tomcat-6.0.36.tar.gz
 tar xzf apache-tomcat-6.0.36.tar.gz
-mv apache-tomcat-6.0.36 $destdir
+mv apache-tomcat-6.0.36 /usr/local/tomcat-6.0.36
 
