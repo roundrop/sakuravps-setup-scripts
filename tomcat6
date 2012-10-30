@@ -1,0 +1,24 @@
+#!/bin/bash
+
+#################################################
+# Installer script for Tomcat (6.0.36)
+#
+#################################################
+
+## check executable user
+if [ "`whoami`" != "root" ]; then
+  echo "You need to be root to run this!"
+  exit 2
+fi
+
+##
+echo 'Install tomcat-6.0.36'
+while [ -z "$destdir" ]; do
+  echo -n "Installation Directory [/usr/local/tomcat-6.0.36]: "
+  read $destdir
+done
+cd /usr/local/src
+wget http://ftp.yz.yamagata-u.ac.jp/pub/network/apache/tomcat/tomcat-6/v6.0.36/bin/apache-tomcat-6.0.36.tar.gz
+tar xzf apache-tomcat-6.0.36.tar.gz
+mv apache-tomcat-6.0.36 $destdir
+

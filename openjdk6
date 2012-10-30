@@ -1,0 +1,17 @@
+#!/bin/bash
+
+#################################################
+# Installer script for OpenJDK 1.6
+#
+#################################################
+
+## check executable user
+if [ "`whoami`" != "root" ]; then
+  echo "You need to be root to run this!"
+  exit 2
+fi
+
+##
+echo 'Install openjdk-1.6'
+yum -y install java-1.6.0-openjdk.x86_64
+
